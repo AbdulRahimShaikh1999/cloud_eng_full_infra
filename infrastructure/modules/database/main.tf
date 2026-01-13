@@ -1,12 +1,16 @@
 # Create DB subnet group
-   resource "aws_db_subnet_group" "main" {
-     name       = "${var.project_name}-db-subnet-group"
-     subnet_ids = var.private_subnet_ids
+resource "aws_db_subnet_group" "main" {
+  name_prefix = "${var.project_name}-db-subnet-group-"
+  subnet_ids  = var.private_subnet_ids
 
-     tags = {
-       Name = "${var.project_name}-db-subnet-group"
-     }
-   }
+  tags = {
+    Name = "${var.project_name}-db-subnet-group"
+  }
+}
+
+   resource "random_id" "rds_suffix" {
+  byte_length = 4
+}
 
    # Create RDS MySQL database
    resource "aws_db_instance" "main" {
@@ -59,10 +63,10 @@
      }
    }
 
-   resource "aws_kms_alias" "rds" {
-     name          = "alias/${var.project_name}-rds"
-     target_key_id = aws_kms_key.rds.key_id
-   }
+resource "aws_kms_alias" "rds" {
+  name          = "alias/${var.project_name}-rds-${random_id.rds_suffix.hex}"
+  target_key_id = aws_kms_key.rds.key_id
+}
 
    # IAM role for RDS monitoring
    resource "aws_iam_role" "rds_monitoring" {
