@@ -1,0 +1,66 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  TERRAFORM_VERSION: 1.5.0
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        working-directory: infrastructure/environments/dev
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: infrastructure/environments/dev
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: infrastructure/environments/dev
+        run: terraform plan
+        env:
+          TF_VAR_key_pair_name: devops-cloud-key
+          TF_VAR_allowed_ssh_cidr: '["0.0.0.0/0"]'
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Terraform Apply
+        working-directory: infrastructure/environments/dev
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_key_pair_name: devops-cloud-key
+          TF_VAR_allowed_ssh_cidr: '["0.0.0.0/0"]'
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Output Infrastructure Details
+        working-directory: infrastructure/environments/dev
+        run: |
+          echo "VPC ID: $(terraform output -raw vpc_id)"
+          echo "Web Server IP: $(terraform output -raw web_eip_addresses)"
+          echo "Database Endpoint: $(terraform output -raw db_endpoint)"
