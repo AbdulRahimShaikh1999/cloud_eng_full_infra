@@ -14,7 +14,7 @@ resource "random_id" "rds_suffix" {
 
 # Create RDS MySQL database
 resource "aws_db_instance" "main" {
-  identifier        = "${var.project_name}-mysql-db"
+  identifier        = "${var.project_name}-mysql-db-${random_id.rds_suffix.hex}"
   engine            = "mysql"
   engine_version    = "8.0"
   instance_class    = var.db_instance_class
