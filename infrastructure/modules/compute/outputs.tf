@@ -8,10 +8,10 @@ output "web_instance_public_ips" {
   value       = aws_instance.web[*].public_ip
 }
 
-# output "web_eip_addresses" {
-#   description = "Elastic IP addresses for web servers"
-#   value       = aws_eip.web[*].public_ip
-# }
+output "web_eip_addresses" {
+  description = "Elastic IP addresses for web servers"
+  value       = aws_eip.web[*].public_ip
+}
 
 output "app_instance_ids" {
   description = "App server instance IDs"

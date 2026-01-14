@@ -81,14 +81,14 @@ resource "aws_instance" "app" {
 }
 
 # Elastic IPs for web servers (for stable public IPs)
-# resource "aws_eip" "web" {
-#   count    = var.web_instance_count
-#   instance = aws_instance.web[count.index].id
-#   domain   = "vpc"
+resource "aws_eip" "web" {
+  count    = var.web_instance_count
+  instance = aws_instance.web[count.index].id
+  domain   = "vpc"
 
-#   tags = {
-#     Name = "${var.project_name}-eip-web-${count.index + 1}"
-#   }
+  tags = {
+    Name = "${var.project_name}-eip-web-${count.index + 1}"
+  }
 
-#   depends_on = [aws_instance.web]
-# }
+  depends_on = [aws_instance.web]
+}
